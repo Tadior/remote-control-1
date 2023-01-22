@@ -7,6 +7,7 @@ import { drawCircle } from "./src/helpers/drawCircle";
 import { mouse } from "@nut-tree/nut-js";
 import { drawRectangle } from "./src/helpers/drawRectangle";
 import { drawSquare } from "./src/helpers/drawSquare";
+import { getScreen } from "./src/helpers/screen";
 
 const wss = new WebSocketServer({ port: 8080 });
 
@@ -34,9 +35,15 @@ wss.on("connection", function connection(ws) {
       case LEGENDARY.draw_square:
         drawSquare(values[0]);
         break;
+      case LEGENDARY.prnt_scrn:
+        getScreen(ws);
+        // ws.send(screen);
+        break;
     }
     console.log("received: %s", data);
-    ws.send(commandOutput);
+    if (commandOutput !== LEGENDARY.prnt_scrn) {
+      ws.send(commandOutput);
+    }
   });
 });
 
