@@ -13,6 +13,7 @@ const wss = new WebSocketServer({ port: 8080 });
 
 wss.on("connection", function connection(ws) {
   ws.on("message", async function message(data) {
+    let baseData = data.toString();
     const dataInfo = data.toString().split(" ");
     const command = dataInfo[0] as keyof typeof LEGENDARY;
     let commandOutput = `${command}`;
@@ -25,6 +26,7 @@ wss.on("connection", function connection(ws) {
       case LEGENDARY.mouse_position:
         const { x, y } = await mouse.getPosition();
         commandOutput = `mouse_position ${x},${y}`;
+        baseData += ` ${x},${y}`;
         break;
       case LEGENDARY.draw_circle:
         drawCircle(values[0]);
@@ -37,14 +39,19 @@ wss.on("connection", function connection(ws) {
         break;
       case LEGENDARY.prnt_scrn:
         getScreen(ws);
-        // ws.send(screen);
         break;
     }
-    console.log("received: %s", data);
+    console.log(`received ${baseData}`);
     if (commandOutput !== LEGENDARY.prnt_scrn) {
       ws.send(commandOutput);
     }
   });
+});
+
+process.on("SIGINT", () => {
+  wss.close();
+  httpServer.close();
+  process.exit();
 });
 
 const HTTP_PORT = 8181;
